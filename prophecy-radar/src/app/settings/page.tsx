@@ -102,19 +102,10 @@ export default function SettingsPage() {
           <h2 className="font-display text-lg mb-2">Platforms</h2>
           <div className="bg-base-raised border border-border rounded-card px-4">
             <IntegrationRow label="YouTube" connected={!!status?.youtube} envVar="YOUTUBE_API_KEY" note="YouTube Data API v3 key from Google Cloud Console." />
-            <IntegrationRow
-              label="TikTok"
-              connected={!!status?.tiktok}
-              envVar="TIKTOK_API_KEY"
-              note="Requires approved TikTok Research API access for keyword-based discovery."
-            />
-            <IntegrationRow
-              label="Facebook"
-              connected={!!status?.facebook}
-              envVar="FACEBOOK_API_KEY"
-              note="Page access token — Facebook discovery works per followed Page, not open keyword search."
-            />
           </div>
+          <p className="text-xs text-ink-faint mt-2">
+            Discovery is currently scoped to YouTube only. TikTok and Facebook connector code still exists in the project for a future re-enable.
+          </p>
         </section>
 
         <section>
