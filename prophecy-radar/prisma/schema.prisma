@@ -1,0 +1,172 @@
+// Prophecy Radar — database schema
+// Run `npm run db:push` after setting DATABASE_URL to create these tables.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Platform {
+  YOUTUBE
+  TIKTOK
+  FACEBOOK
+}
+
+enum ContentStatus {
+  NEW
+  REVIEWED
+  DONE
+  IGNORED
+}
+
+enum IdeaType {
+  TITLE
+  THUMBNAIL_CAPTION
+  VIRAL_PACKAGE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  statuses  UserContentStatus[]
+  ideas     GeneratedIdea[]
+  prophets  FollowedProphet[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  emoji       String   @default("🔮")
+  description String?
+  keywords    String[] // e.g. ["Peter Obi 2027 prophecy", "Tinubu death prophecy"]
+  isCustom    Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  contentItems ContentItem[]
+}
+
+// One row per unique piece of content discovered on a platform.
+// Uniqueness is enforced at the (platform, platformContentId) level,
+// with normalizedUrl as a secondary dedup key — see services/deduplication.
+model Source {
+  id                String   @id @default(cuid())
+  platform          Platform
+  platformContentId String // e.g. YouTube video ID, TikTok video ID, FB post ID
+  url               String
+  normalizedUrl     String // lower-cased, tracking params stripped — used for dedup
+  creatorName       String
+  creatorId         String?
+  title             String
+  description       String?
+  thumbnailUrl      String?
+  publishedAt       DateTime?
+  discoveredAt      DateTime  @default(now())
+  viewCount         Int?
+  likeCount         Int?
+  commentCount      Int?
+  isLikelyRepost    Boolean   @default(false)
+  metadata          Json? // raw platform payload for future re-analysis
+
+  contentItem ContentItem?
+
+  @@unique([platform, platformContentId])
+  @@index([normalizedUrl])
+  @@index([creatorName])
+}
+
+// The analyzed, categorized version of a Source — what the UI actually shows.
+model ContentItem {
+  id              String   @id @default(cuid())
+  sourceId        String   @unique
+  source          Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+
+  relevanceScore    Int // 0-100, from services/relevance
+  relevanceReason   String? // "WHY THIS WAS RECOMMENDED"
+  prophecyTopic     String?
+  peopleMentioned   String[]
+  locations         String[]
+  timeframe         String?
+  prophecyType      String?
+  keyClaim          String? // neutral, attributed phrasing only
+  keywords          String[]
+  summary           String?
+
+  status    ContentStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  userStatuses UserContentStatus[]
+  ideas        GeneratedIdea[]
+
+  @@index([status])
+  @@index([relevanceScore])
+}
+
+// Per-user status/notes on a content item. Marking DONE never deletes
+// the ContentItem — it just writes/updates this row.
+model UserContentStatus {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  contentId   String
+  contentItem ContentItem   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  status      ContentStatus @default(NEW)
+  notes       String?
+  reviewedAt  DateTime?
+  completedAt DateTime?
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([userId, contentId])
+}
+
+model GeneratedIdea {
+  id          String      @id @default(cuid())
+  contentId   String
+  contentItem ContentItem @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  type        IdeaType
+  content     Json // titles: string[]; captions: string[]; package: structured object
+  createdAt   DateTime    @default(now())
+}
+
+model FollowedProphet {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  name             String
+  youtubeChannelUrl String?
+  tiktokProfileUrl  String?
+  facebookPageUrl   String?
+  keywords         String[]
+  createdAt        DateTime @default(now())
+}
+
+model AppSetting {
+  id    String @id @default("singleton")
+  // Discovery
+  scanFrequencyMinutes    Int     @default(360) // every 6 hours
+  minimumRelevanceScore   Int     @default(50)
+  recommendationsPerCategory Int  @default(6)
+  // Platforms (booleans just reflect whether keys are configured; keys live in env vars)
+  youtubeEnabled Boolean @default(false)
+  tiktokEnabled  Boolean @default(false)
+  facebookEnabled Boolean @default(false)
+  // AI
+  aiProvider String @default("anthropic")
+  aiModel    String @default("claude-sonnet-4-6")
+  // Notifications
+  dailyBriefingEnabled Boolean @default(true)
+  emailEnabled         Boolean @default(false)
+  pushEnabled          Boolean @default(false)
+}
