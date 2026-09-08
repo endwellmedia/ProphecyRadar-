@@ -1,12 +1,6 @@
 import { ContentCardData } from '@/lib/types';
 import { DEFAULT_CATEGORIES } from './default-categories';
 
-/**
- * Clearly-fictional demo content so the interface is fully explorable
- * before real API keys/database are configured. Titles, creators, and
- * claims below are illustrative placeholders, not real broadcasts.
- * Swap DATABASE_URL + platform keys in .env to replace this with live data.
- */
 function cat(id: string) {
   const found = DEFAULT_CATEGORIES.find((c) => c.id === id)!;
   return { id: found.id, name: found.name, emoji: found.emoji };
@@ -44,7 +38,7 @@ export const MOCK_CONTENT: ContentCardData[] = [
     prophecyType: 'Election prediction',
     keyClaim: 'The speaker predicts a major political shift during the 2027 election cycle, without naming a specific winner.',
     keywords: ['Nigeria', '2027 election', 'Peter Obi', 'prophecy', 'president'],
-    summary: 'The video discusses the speaker\'s claimed prophetic insight into the 2027 Nigerian presidential race, mentioning Peter Obi and Bola Tinubu by name.',
+    summary: 'The video discusses the speaker claimed prophetic insight into the 2027 Nigerian presidential race, mentioning Peter Obi and Bola Tinubu by name.',
     notes: null
   },
   {
@@ -75,7 +69,7 @@ export const MOCK_CONTENT: ContentCardData[] = [
   {
     id: nextId(),
     platform: 'YOUTUBE',
-    title: 'Prophecy clip: "Nigeria will not remain the same after this year"',
+    title: 'Prophecy clip: Nigeria will not remain the same after this year',
     creatorName: 'Demo Watchman Channel',
     url: 'https://www.youtube.com/watch?v=demo3',
     thumbnailUrl: undefined,
@@ -85,3 +79,40 @@ export const MOCK_CONTENT: ContentCardData[] = [
     categoryName: cat('cat-general').name,
     categoryEmoji: cat('cat-general').emoji,
     status: 'NEW',
+    relevanceScore: 76,
+    relevanceReason: 'This clip was recommended because it presents a general prediction about change in Nigeria framed as a prophetic word.',
+    prophecyTopic: 'General national outlook',
+    peopleMentioned: [],
+    locations: ['Nigeria'],
+    timeframe: 'This year',
+    prophecyType: 'General prediction',
+    keyClaim: 'The speaker claims Nigeria is entering a period of significant change, without specifying details.',
+    keywords: ['Nigeria', 'prophecy', 'change'],
+    summary: 'A short clip in which the speaker predicts broad change for Nigeria without elaborating on specifics.',
+    notes: null
+  },
+  {
+    id: nextId(),
+    platform: 'YOUTUBE',
+    title: 'Prophetic Alert: Prophet Speaks on Security Situation Across Nigerian States',
+    creatorName: 'Demo Watchman Ministries',
+    url: 'https://www.youtube.com/watch?v=demo4',
+    thumbnailUrl: undefined,
+    publishedAt: daysAgoISO(2, 0),
+    viewCount: 41230,
+    categoryId: 'cat-crisis',
+    categoryName: cat('cat-crisis').name,
+    categoryEmoji: cat('cat-crisis').emoji,
+    status: 'REVIEWED',
+    relevanceScore: 81,
+    relevanceReason: 'This video was recommended because it discusses insecurity across Nigerian states and frames it as part of a prophetic warning.',
+    prophecyTopic: 'Insecurity across Nigerian states',
+    peopleMentioned: [],
+    locations: ['Nigeria'],
+    timeframe: 'Unspecified',
+    prophecyType: 'Warning',
+    keyClaim: 'The speaker claims to have foreseen a rise in insecurity in specific Nigerian regions and calls for prayer.',
+    keywords: ['Nigeria', 'insecurity', 'crisis', 'prophecy'],
+    summary: 'The video discusses a claimed prophetic warning about insecurity in named Nigerian states, urging viewers to pray.',
+    notes: 'Compare with last month similar warning from the same channel.'
+  },
