@@ -1,6 +1,5 @@
 {
   "crons": [
-    { "path": "/api/cron/morning-briefing", "schedule": "0 6 * * *" },
-    { "path": "/api/discover", "schedule": "0 13,19 * * *" }
+    { "path": "/api/cron/morning-briefing", "schedule": "0 6 * * *" }
   ]
 }
