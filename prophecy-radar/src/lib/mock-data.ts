@@ -218,4 +218,7 @@ export const MOCK_CONTENT: ContentCardData[] = [
     timeframe: 'Unspecified',
     prophecyType: 'Conflict warning',
     keyClaim: 'The speaker claims to have foreseen an escalation of violence in the Middle Belt region and calls for intervention.',
-    keywords: ['Nigeria', 'conflict', 'Middle Belt', 'prophecy',
+    keywords: ['Nigeria', 'conflict', 'Middle Belt', 'prophecy', 'warning'],
+    summary: "The video discusses the speaker's claimed prophetic warning about worsening regional conflict, without naming a specific date.",
+    notes: null
+  },
