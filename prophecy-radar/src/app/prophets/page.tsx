@@ -16,7 +16,7 @@ interface Prophet {
 export default function ProphetsPage() {
   const [prophets, setProphets] = useState<Prophet[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', youtubeChannelUrl: '', tiktokProfileUrl: '', facebookPageUrl: '', keywords: '' });
+  const [form, setForm] = useState({ name: '', youtubeChannelUrl: '', keywords: '' });
   const [submitting, setSubmitting] = useState(false);
 
   const load = () =>
@@ -41,7 +41,7 @@ export default function ProphetsPage() {
     });
     setSubmitting(false);
     setShowForm(false);
-    setForm({ name: '', youtubeChannelUrl: '', tiktokProfileUrl: '', facebookPageUrl: '', keywords: '' });
+    setForm({ name: '', youtubeChannelUrl: '', keywords: '' });
     load();
   };
 
@@ -71,18 +71,6 @@ export default function ProphetsPage() {
             placeholder="YouTube channel URL"
             value={form.youtubeChannelUrl}
             onChange={(e) => setForm({ ...form, youtubeChannelUrl: e.target.value })}
-            className="focus-ring bg-base-raised border border-border rounded-card px-3 py-2.5 text-sm placeholder:text-ink-faint"
-          />
-          <input
-            placeholder="TikTok profile URL"
-            value={form.tiktokProfileUrl}
-            onChange={(e) => setForm({ ...form, tiktokProfileUrl: e.target.value })}
-            className="focus-ring bg-base-raised border border-border rounded-card px-3 py-2.5 text-sm placeholder:text-ink-faint"
-          />
-          <input
-            placeholder="Facebook page URL"
-            value={form.facebookPageUrl}
-            onChange={(e) => setForm({ ...form, facebookPageUrl: e.target.value })}
             className="focus-ring bg-base-raised border border-border rounded-card px-3 py-2.5 text-sm placeholder:text-ink-faint"
           />
           <input
