@@ -31,7 +31,6 @@ export const MOCK_CONTENT: ContentCardData[] = [
     thumbnailUrl: undefined,
     publishedAt: daysAgoISO(0, 6),
     viewCount: 118500,
-    ...cat('cat-2027-election'),
     categoryId: 'cat-2027-election',
     categoryName: cat('cat-2027-election').name,
     categoryEmoji: cat('cat-2027-election').emoji,
