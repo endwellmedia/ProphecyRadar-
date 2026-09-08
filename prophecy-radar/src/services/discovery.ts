@@ -1,15 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import { youtubeConnector } from '@/connectors/youtube';
-import { tiktokConnector } from '@/connectors/tiktok';
-import { discoverForPage } from '@/connectors/facebook';
 import { checkForDuplicate, refreshExistingSource, normalizeUrl } from './deduplication';
 import { analyzeContent } from './ai-analysis';
 import { RawDiscoveredItem } from '@/lib/types';
 
 /**
- * Runs one full discovery pass across all active categories and all
- * configured connectors. Safe to call repeatedly (e.g. on every dashboard
- * load, or from a cron job) — dedup ensures no duplicate rows are created.
+ * Runs one full discovery pass across all active categories.
+ * Currently YouTube-only by request — TikTok and Facebook connectors
+ * still exist in /connectors for a future re-enable, but are not called
+ * here. Safe to call repeatedly (e.g. on every dashboard load, or from a
+ * cron job) — dedup ensures no duplicate rows are created.
  *
  * Returns a summary so callers (API routes, cron scripts) can report
  * how many genuinely new items were found.
@@ -99,54 +99,15 @@ export async function runDiscovery(): Promise<{ scanned: number; newItems: numbe
   for (const category of categories) {
     const keywords = category.keywords.length > 0 ? category.keywords : [category.name];
 
-    const [youtubeItems, tiktokItems] = await Promise.all([
-      youtubeConnector.discover({ keywords, sinceISO, maxResults: 10 }),
-      tiktokConnector.discover({ keywords, sinceISO, maxResults: 10 })
-    ]);
+    const youtubeItems = await youtubeConnector.discover({ keywords, sinceISO, maxResults: 10 });
+    scanned += youtubeItems.length;
 
-    const allItems: RawDiscoveredItem[] = [...youtubeItems, ...tiktokItems];
-    scanned += allItems.length;
-
-    for (const item of allItems) {
+    for (const item of youtubeItems) {
       const outcome = await processDiscoveredItem(item, category.id, category.name, keywords, minRelevance);
       if (outcome === 'inserted') newItems += 1;
       else skipped += 1;
     }
   }
 
-  // Followed prophets' Facebook Pages are scanned separately since FB
-  // discovery is per-Page, not keyword based (see connectors/facebook.ts).
-  // Each post is categorized against the "General Nigeria Prophecies"
-  // category by default, since a Page isn't tied to one topic the way a
-  // keyword search is — the AI relevance gate still filters out anything
-  // that isn't genuinely prophecy-related.
-  const generalCategory = categories.find((c) => c.id === 'cat-general') ?? categories[0];
-  const prophets = await prisma.followedProphet.findMany({ where: { facebookPageUrl: { not: null } } });
-
-  for (const prophet of prophets) {
-    const pageId = extractFacebookPageId(prophet.facebookPageUrl!);
-    if (!pageId || !generalCategory) continue;
-
-    const fbItems = await discoverForPage(pageId, sinceISO);
-    scanned += fbItems.length;
-
-    for (const item of fbItems) {
-      const outcome = await processDiscoveredItem(
-        item,
-        generalCategory.id,
-        generalCategory.name,
-        [...generalCategory.keywords, prophet.name, ...prophet.keywords],
-        minRelevance
-      );
-      if (outcome === 'inserted') newItems += 1;
-      else skipped += 1;
-    }
-  }
-
   return { scanned, newItems, skipped };
-}
-
-function extractFacebookPageId(url: string): string | null {
-  const match = url.match(/facebook\.com\/([^/?]+)/);
-  return match ? match[1] : null;
 }
